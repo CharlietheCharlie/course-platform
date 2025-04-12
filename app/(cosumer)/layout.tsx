@@ -1,4 +1,6 @@
 import { Button } from "@/components/ui/button";
+import { canAccessAdminPages } from "@/permissions/general";
+import { getCurrentUser } from "@/services/clerk";
 import { SignedIn, SignedOut, UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 import { Suspense } from "react";
@@ -16,16 +18,14 @@ export default function ConsumerLayout({
 
 function NavBar() {
     return <header className="flex h-12 shadow bg-background z-10">
-        <nav className="flex gap-4 container mx-auto">
+        <nav className="flex gap-4 container">
             <Link href="/"
                 className="mr-auto text-lg hover:underline px-2 flex items-center">
                 Charlie Frontend
             </Link>
             <Suspense>
                 <SignedIn>
-                    <Link href="/admin" className="hover:bg-accent/10 flex items-center px-2">
-                        Admin
-                    </Link>
+                    <AdminLink />
                     <Link href="/courses" className="hover:bg-accent/10 flex items-center px-2">
                         My Courses
                     </Link>
@@ -50,4 +50,12 @@ function NavBar() {
             </Suspense>
         </nav>
     </header>
+}
+
+async function AdminLink() {
+    const user = await getCurrentUser();
+    if(!canAccessAdminPages(user))return null;
+    return <Link href="/admin" className="hover:bg-accent/10 flex items-center px-2">
+        Admin
+    </Link>
 }

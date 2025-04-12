@@ -49,9 +49,10 @@ export async function POST(req: Request) {
           email,
           name,
           imageUrl: event.data.image_url,
-          role: "users",
+          role: "user",
         });
 
+        // 把需要的資訊同步到 clerk ex. dbId role
         await syncClerkUserMetadata(user);
       } else {
         await updateUser(
@@ -64,6 +65,7 @@ export async function POST(req: Request) {
           }
         );
       }
+      break;
     }
     case "user.deleted": {
       if (event.data.id != null) {
@@ -71,6 +73,7 @@ export async function POST(req: Request) {
       }
       break;
     }
+
   }
 
   return new Response("OK", { status: 200 });

@@ -4,7 +4,7 @@ import { userCourseAccessTable } from "./userCourseAccess";
 import { relations } from "drizzle-orm";
 
 
-export const userRoles = ["users", "admin"] as const;
+export const userRoles = ["user", "admin"] as const;
 export type userRole = (typeof userRoles)[number];
 export const userRoleEnum = pgEnum("user_roles", userRoles);
 
@@ -13,7 +13,7 @@ export const UserTable = pgTable("users", {
     clerkUserId: text().notNull().unique(),
     email: text().notNull(),
     name: text().notNull(),
-    role: userRoleEnum().notNull().default("users"),
+    role: userRoleEnum().notNull().default("user"),
     imageUrl:text(),
     deletedAt: timestamp({ withTimezone: true }),
     createdAt,
