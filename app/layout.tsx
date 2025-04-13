@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { ClerkProvider } from "@clerk/nextjs";
 import { Suspense } from "react";
+import { Toaster } from "@/components/ui/sonner";
 
 
 export const metadata: Metadata = {
@@ -21,6 +22,7 @@ export default function RootLayout({
       >
         <Suspense>
           <ClerkProvider>
+            <Toaster></Toaster>
             {children}
           </ClerkProvider>
         </Suspense>
