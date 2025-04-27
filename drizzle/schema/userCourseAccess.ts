@@ -4,7 +4,7 @@ import { createdAt, updatedAt } from "../schemaHelper";
 import { UserTable } from "./user";
 import { CourseTable } from "./course";
 
-export const userCourseAccessTable = pgTable(
+export const UserCourseAccessTable = pgTable(
   "user_course_access",
   {
     userId: uuid()
@@ -20,14 +20,14 @@ export const userCourseAccessTable = pgTable(
 );
 
 export const UserCourseAccessRelationShips = relations(
-  userCourseAccessTable,
+  UserCourseAccessTable,
   ({ one }) => ({
     user: one(UserTable, {
-      fields: [userCourseAccessTable.userId],
+      fields: [UserCourseAccessTable.userId],
       references: [UserTable.id],
     }),
     course: one(CourseTable, {
-      fields: [userCourseAccessTable.courseId],
+      fields: [UserCourseAccessTable.courseId],
       references: [CourseTable.id],
     }),
   })

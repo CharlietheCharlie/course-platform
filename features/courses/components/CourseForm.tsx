@@ -5,7 +5,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { courseSchema } from "../schemas/courses";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { RequiredLabelIcon } from "@/components/ui/RequiredLabelIcon";
+import { RequiredLabelIcon } from "@/components/RequiredLabelIcon";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
