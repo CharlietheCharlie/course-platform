@@ -9,25 +9,31 @@ import { RequiredLabelIcon } from "@/components/RequiredLabelIcon";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { createCourse } from "../actions/courses";
+import { createCourse, updateCourse } from "../actions/courses";
 import { toast } from "sonner";
 
-export default function CourseForm() {
+export default function CourseForm({ course }: {
+    course?: {
+        id: string;
+        name: string;
+        description: string;
+    }
+}) {
     const form = useForm<z.infer<typeof courseSchema>>({
         resolver: zodResolver(courseSchema),
-        defaultValues: {
+        defaultValues: course ?? {
             name: "",
             description: "",
         }
     });
 
     async function onSubmit(values: z.infer<typeof courseSchema>) {
-        const {error, message} = await createCourse(values);
-        if(error){
-            toast.error("Error",{description:message});
-        }else{
-            toast.success("Course created successfully");
-            form.reset();
+        const action = course == null ? createCourse : updateCourse.bind(null, course.id);
+        const { error, message } = await action(values);
+        if (error) {
+            toast.error("Error", { description: message });
+        } else {
+            toast.success(message);
         }
     }
 

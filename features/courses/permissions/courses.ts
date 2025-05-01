@@ -4,6 +4,10 @@ export function canCreateCourses(user: { role: userRole | undefined }) {
   return user.role === "admin";
 }
 
+export function canUpdateCourses(user: { role: userRole | undefined }) {
+  return user.role === "admin";
+}
+
 export function canDeleteCourses(user: { role: userRole | undefined }) {
   return user.role === "admin";
 }

@@ -4,8 +4,16 @@ import { z } from "zod";
 import { courseSchema } from "../schemas/courses";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/services/clerk";
-import { canCreateCourses, canDeleteCourses } from "../permissions/courses";
-import { insertCourse } from "../db/courses";
+import {
+  canCreateCourses,
+  canDeleteCourses,
+  canUpdateCourses,
+} from "../permissions/courses";
+import {
+  insertCourse,
+  deleteCourse as deleteCourseDb,
+  updateCourse as updateCourseDb,
+} from "../db/courses";
 
 export async function createCourse(unsafeData: z.infer<typeof courseSchema>) {
   const { success, data } = courseSchema.safeParse(unsafeData);
@@ -19,17 +27,27 @@ export async function createCourse(unsafeData: z.infer<typeof courseSchema>) {
   redirect(`/admin/courses/${course.id}/edit`);
 }
 
-function wait(number: number) {
-    return new Promise(res=>setTimeout(res,number));
+export async function updateCourse(
+  id: string,
+  unsafeData: z.infer<typeof courseSchema>
+) {
+  const { success, data } = courseSchema.safeParse(unsafeData);
+
+  if (!success || !canUpdateCourses(await getCurrentUser())) {
+    return { error: true, message: "There was an error updating your course" };
+  }
+
+  await updateCourseDb(id, data);
+
+  return { error: false, message: "Course updated successfully" };
 }
 
 export async function deleteCourse(id: string) {
-  await wait(1000);
-  if (!canDeleteCourses(await getCurrentUser()) || true) {
+  if (!canDeleteCourses(await getCurrentUser())) {
     return { error: true, message: "Error deleting your course" };
   }
 
-  await deleteCourse(id);
+  await deleteCourseDb(id);
 
   return { error: false, message: "Course deleted successfully" };
 }

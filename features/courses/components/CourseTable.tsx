@@ -43,7 +43,7 @@ export function CourseTable({
                             <Button asChild>
                                 <Link href={`/admin/courses/${course.id}/edit`}>Edit</Link>
                             </Button>
-                            <ActionButton variant="destructiveOutline" action={deleteCourse.bind(null, course.id)}>
+                            <ActionButton variant="destructiveOutline" requireAreYouSure action={deleteCourse.bind(null, course.id)}>
                                 <Trash2Icon></Trash2Icon>
                                 <span className="sr-only"></span>
                             </ActionButton>
