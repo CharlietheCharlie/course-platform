@@ -1,13 +1,20 @@
+import { ActionButton } from "@/components/ActionButton";
 import { PageHeader } from "@/components/PageHeader";
-import { Card, CardHeader } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { DialogTrigger } from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { db } from "@/drizzle/db";
 import { CourseSectionTable, CourseTable, LessonTable } from "@/drizzle/schema";
 import CourseForm from "@/features/courses/components/CourseForm";
 import { getCourseIdTag } from "@/features/courses/db/cache/courses";
+import { deleteSection } from "@/features/courseSections/actions/sections";
+import { SectionFormDialog } from "@/features/courseSections/components/SectionFormDialog";
 import { getCourseSectionCourseTag } from "@/features/courseSections/db/cache";
 import { getLessonCourseTag } from "@/features/lessons/db/cache/lessons";
+import { cn } from "@/lib/utils";
 import { asc, eq } from "drizzle-orm";
+import { EyeClosedIcon, PlusIcon, Trash2Icon } from "lucide-react";
 import { cacheTag } from "next/dist/server/use-cache/cache-tag";
 import { notFound } from "next/navigation";
 
@@ -28,9 +35,44 @@ export default async function EditCoursePage({ params }: {
                 </TabsList>
                 <TabsContent value="lessons">
                     <Card>
-                        <CardHeader >
-                            <h3 className="flex items-center flex-row justify-between">Lessons</h3>
+                        <CardHeader className="flex items-center flex-row justify-between" >
+                            <CardTitle>
+                                Sections
+                            </CardTitle>
+                            <SectionFormDialog courseId={course.id} >
+                                <DialogTrigger asChild>
+                                    <Button variant="outline">
+                                        <PlusIcon></PlusIcon>New Section
+                                    </Button>
+                                </DialogTrigger>
+                            </SectionFormDialog>
                         </CardHeader>
+                        <CardContent>
+                            {course.courseSections.map((section) => (
+                                <div key={section.id} className="flex items-center gap-1">
+                                    <div className={cn("contents", section.status === "private" && "text-muted-foreground")}>
+                                        {section.status === "private" && (
+                                            <EyeClosedIcon className="size-4"></EyeClosedIcon>
+                                        )}
+                                        {section.name}
+                                    </div>
+                                    <SectionFormDialog section={section} courseId={courseId} >
+                                        <DialogTrigger asChild>
+                                            <Button variant="outline" size="sm" className="ml-auto">
+                                                Edit
+                                            </Button>
+                                        </DialogTrigger>
+                                    </SectionFormDialog>
+                                    <ActionButton action={deleteSection.bind(null, section.id)}
+                                        requireAreYouSure
+                                        variant="destructiveOutline"
+                                        size="sm">
+                                        <Trash2Icon></Trash2Icon>
+                                        <span className="sr-only">Delete</span>
+                                    </ActionButton>
+                                </div>
+                            ))}
+                        </CardContent>
                     </Card>
                 </TabsContent>
                 <TabsContent value="details">
@@ -59,7 +101,7 @@ async function getCourse(id: string) {
         with: {
             courseSections: {
                 orderBy: asc(CourseSectionTable.order),
-                columns: { id: true, name: true, status: true },
+                columns: { id: true, name: true, status: true, order: true },
                 with: {
                     lessons: {
                         orderBy: asc(LessonTable.order),
