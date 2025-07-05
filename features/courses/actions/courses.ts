@@ -51,3 +51,4 @@ export async function deleteCourse(id: string) {
 
   return { error: false, message: "Course deleted successfully" };
 }
+

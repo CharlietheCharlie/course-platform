@@ -4,11 +4,16 @@ import { z } from "zod";
 import { getCurrentUser } from "@/services/clerk";
 import { sectionSchema } from "../schemas/section";
 import { canCreateCourseSections, canDeleteCourseSections, canUpdateCourseSections } from "../permissions/sections";
-import { getNextCourseSectionOrder, insertSection, updateSection as updateSectionDb, deleteSection as deleteSectionDb } from "../db/sections";
+import {
+  getNextCourseSectionOrder,
+  insertSection,
+  updateSection as updateSectionDb,
+  deleteSection as deleteSectionDb,
+  updateSectionOrders as updateSectionOrdersDb
+} from "../db/sections";
 
 export async function createSection(courseId: string, unsafeData: z.infer<typeof sectionSchema>) {
   const { success, data } = sectionSchema.safeParse(unsafeData);
-
   if (!success || !canCreateCourseSections(await getCurrentUser())) {
     return { error: true, message: "There was an error creating your course" };
   }
@@ -43,4 +48,13 @@ export async function deleteSection(id: string) {
   await deleteSectionDb(id);
 
   return { error: false, message: "Section deleted successfully" };
+}
+
+export async function updateSectionOrders(sectionIds: string[]) {
+  if (sectionIds.length === 0 || !canUpdateCourseSections(await getCurrentUser())) {
+    return { error: true, message: "There was an error updating your section" };
+  }
+  await updateSectionOrdersDb(sectionIds)
+
+  return { error: false, message: "Section updated successfully" };
 }

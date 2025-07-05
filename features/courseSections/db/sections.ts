@@ -4,13 +4,13 @@ import { revalidateCourseSectionCache } from "./cache";
 import { eq } from "drizzle-orm";
 
 export async function getNextCourseSectionOrder(courseId: string) {
-    const section = await db.query.CourseSectionTable.findFirst({
-        columns: { order: true },
-        where: ({courseId: courseIdCol}, {eq})=> eq(courseIdCol, courseId),
-        orderBy: ({order}, {desc}) => desc(order),
-    })
+  const section = await db.query.CourseSectionTable.findFirst({
+    columns: { order: true },
+    where: ({ courseId: courseIdCol }, { eq }) => eq(courseIdCol, courseId),
+    orderBy: ({ order }, { desc }) => desc(order),
+  })
 
-    return section ? section.order + 1 : 0
+  return section ? section.order + 1 : 0
 }
 
 export async function insertSection(
@@ -59,4 +59,24 @@ export async function deleteSection(id: string) {
   });
 
   return deletedSection;
+}
+
+export async function updateSectionOrders(
+  sectionIds: string[]
+) {
+  const sections = await Promise.all(
+    sectionIds.map((id, index) => {
+      return db.update(CourseSectionTable).set({ order: index }).where(eq(CourseSectionTable.id, id)).returning(
+        {
+          courseId: CourseSectionTable.courseId,
+          id: CourseSectionTable.id
+        }
+      );
+    }))
+  sections.flat().forEach(({ id, courseId }) => {
+    revalidateCourseSectionCache({
+      id,
+      courseId
+    });
+  })
 }

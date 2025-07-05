@@ -13,7 +13,10 @@ export function getLessonCourseTag(courseId: string) {
   return getCourseTag("lessons", courseId);
 }
 
-export function revalidateLessonCache(id: string, courseId: string) {
+export function revalidateLessonCache({ id, courseId }: {
+  id: string;
+  courseId: string;
+}) {
   revalidateTag(getLessonGlobalTag());
   revalidateTag(getLessonIdTag(id));
   revalidateTag(getLessonCourseTag(courseId));

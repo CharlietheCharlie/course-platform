@@ -7,7 +7,7 @@ import { useState } from "react";
 
 export function SectionFormDialog({ courseId, section, children }: {
     courseId: string;
-    section?: { id: string; name: string; status: CourseSectionStatus; order: number; };
+    section?: { id: string; name: string; status: CourseSectionStatus };
     children: React.ReactNode;
 }) {
     const [isOpen, setIsOpen] = useState(false);
