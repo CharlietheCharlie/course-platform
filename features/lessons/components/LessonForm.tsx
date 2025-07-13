@@ -34,7 +34,7 @@ export default function LessonForm({
   defaultSectionId,
   onSuccess = () => {},
 }: {
-  lesson: {
+  lesson?: {
     id: string;
     name: string;
     status: LessonStatus;

@@ -19,96 +19,116 @@ import { EyeClosed, PlusIcon } from "lucide-react";
 import { cacheTag } from "next/dist/server/use-cache/cache-tag";
 import { notFound } from "next/navigation";
 
-export default async function EditCoursePage({ params }: {
-    params: Promise<{ courseId: string }>;
+export default async function EditCoursePage({
+  params,
+}: {
+  params: Promise<{ courseId: string }>;
 }) {
-    const { courseId } = await params;
-    const course = await getCourse(courseId);
-    if (course == null) return notFound();
+  const { courseId } = await params;
+  const course = await getCourse(courseId);
+  if (course == null) return notFound();
 
-    return (
-        <div className="container my-6">
-            <PageHeader title={course.name} />
-            <Tabs defaultValue="lessons">
-                <TabsList>
-                    <TabsTrigger value="lessons">Lessons</TabsTrigger>
-                    <TabsTrigger value="details">Details</TabsTrigger>
-                </TabsList>
-                <TabsContent value="lessons" className="flex flex-col gap-2">
-                    <Card>
-                        <CardHeader className="flex items-center flex-row justify-between" >
-                            <CardTitle>
-                                Sections
-                            </CardTitle>
-                            <SectionFormDialog courseId={course.id} >
-                                <DialogTrigger asChild>
-                                    <Button variant="outline">
-                                        <PlusIcon></PlusIcon>New Section
-                                    </Button>
-                                </DialogTrigger>
-                            </SectionFormDialog>
-                        </CardHeader>
-                        <CardContent>
-                            <SortableSectionList courseId={course.id} sections={course.courseSections}></SortableSectionList>
-                        </CardContent>
-                    </Card>
-                    <hr className="my-2" />
-                    {course.courseSections.map(section => (
-                        <Card key={section.id}>
-                            <CardHeader className="flex items-center flex-row justify-between gap-4" >
-                                <CardTitle className={cn("flex items-center gap-2", section.status === "private" && "text-muted-foreground")}>
-                                    {section.status === "private" && (
-                                        <EyeClosed></EyeClosed>
-                                    )}{section.name}
-                                </CardTitle>
-                                <LessonFormDialog defaultSectionId={section.id} sections={course.courseSections}>
-                                    <DialogTrigger asChild>
-                                        <Button variant="outline">
-                                            <PlusIcon></PlusIcon>New Lesson
-                                        </Button>
-                                    </DialogTrigger>
-                                </LessonFormDialog>
-                            </CardHeader>
-                            <CardContent>
-                                <SortableLessonList sections={course.courseSections} lessons={section.lessons}></SortableLessonList>
-                            </CardContent>
-                        </Card>
-                    ))}
-                </TabsContent>
-                <TabsContent value="details">
-                    <Card>
-                        <CardHeader >
-                            <CourseForm course={course}></CourseForm>
-                        </CardHeader>
-                    </Card>
-                </TabsContent>
-
-            </Tabs>
-
-        </div>
-    )
+  return (
+    <div className="container my-6">
+      <PageHeader title={course.name} />
+      <Tabs defaultValue="lessons">
+        <TabsList>
+          <TabsTrigger value="lessons">Lessons</TabsTrigger>
+          <TabsTrigger value="details">Details</TabsTrigger>
+        </TabsList>
+        <TabsContent value="lessons" className="flex flex-col gap-2">
+          <Card>
+            <CardHeader className="flex items-center flex-row justify-between">
+              <CardTitle>Sections</CardTitle>
+              <SectionFormDialog courseId={course.id}>
+                <DialogTrigger asChild>
+                  <Button variant="outline">
+                    <PlusIcon></PlusIcon>New Section
+                  </Button>
+                </DialogTrigger>
+              </SectionFormDialog>
+            </CardHeader>
+            <CardContent>
+              <SortableSectionList
+                courseId={course.id}
+                sections={course.courseSections}
+              ></SortableSectionList>
+            </CardContent>
+          </Card>
+          <hr className="my-2" />
+          {course.courseSections.map((section) => (
+            <Card key={section.id}>
+              <CardHeader className="flex items-center flex-row justify-between gap-4">
+                <CardTitle
+                  className={cn(
+                    "flex items-center gap-2",
+                    section.status === "private" && "text-muted-foreground"
+                  )}
+                >
+                  {section.status === "private" && <EyeClosed></EyeClosed>}
+                  {section.name}
+                </CardTitle>
+                <LessonFormDialog   
+                  defaultSectionId={section.id}
+                  sections={course.courseSections}
+                >
+                  <DialogTrigger asChild>
+                    <Button variant="outline">
+                      <PlusIcon></PlusIcon>New Lesson
+                    </Button>
+                  </DialogTrigger>
+                </LessonFormDialog>
+              </CardHeader>
+              <CardContent>
+                <SortableLessonList
+                  sections={course.courseSections}
+                  lessons={section.lessons}
+                ></SortableLessonList>
+              </CardContent>
+            </Card>
+          ))}
+        </TabsContent>
+        <TabsContent value="details">
+          <Card>
+            <CardHeader>
+              <CourseForm course={course}></CourseForm>
+            </CardHeader>
+          </Card>
+        </TabsContent>
+      </Tabs>
+    </div>
+  );
 }
 
-
 async function getCourse(id: string) {
-    "use cache"
-    cacheTag(getCourseIdTag(id), getCourseSectionCourseTag(id), getLessonCourseTag(id));
+  "use cache";
+  cacheTag(
+    getCourseIdTag(id),
+    getCourseSectionCourseTag(id),
+    getLessonCourseTag(id)
+  );
 
-
-    return db.query.CourseTable.findFirst({
-        columns: { id: true, name: true, description: true },
-        where: eq(CourseTable.id, id),
+  return db.query.CourseTable.findFirst({
+    columns: { id: true, name: true, description: true },
+    where: eq(CourseTable.id, id),
+    with: {
+      courseSections: {
+        orderBy: asc(CourseSectionTable.order),
+        columns: { id: true, name: true, status: true, order: true },
         with: {
-            courseSections: {
-                orderBy: asc(CourseSectionTable.order),
-                columns: { id: true, name: true, status: true, order: true },
-                with: {
-                    lessons: {
-                        orderBy: asc(LessonTable.order),
-                        columns: { id: true, name: true, status: true, description: true, youtubeVideoId: true, sectionId: true }
-                    }
-                }
-            }
-        }
-    })
+          lessons: {
+            orderBy: asc(LessonTable.order),
+            columns: {
+              id: true,
+              name: true,
+              status: true,
+              description: true,
+              youtubeVideoId: true,
+              sectionId: true,
+            },
+          },
+        },
+      },
+    },
+  });
 }

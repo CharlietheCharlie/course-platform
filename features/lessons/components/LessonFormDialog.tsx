@@ -19,7 +19,7 @@ export function LessonFormDialog({
   defaultSectionId?: string;
   sections: { id: string; name: string }[];
   children: React.ReactNode;
-  lesson: {
+  lesson?: {
     id: string;
     name: string;
     status: LessonStatus;
