@@ -8,6 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { formatPrice } from "@/lib/formatters";
+import { getUserCoupon } from "@/lib/useCountryHeader";
 import Image from "next/image";
 import Link from "next/link";
 import React, { Suspense } from "react";
@@ -52,6 +53,15 @@ const ProductCard = ({
 
 export default ProductCard;
 
-async function Price({ price }: { price?: number } = {}) {
-  return null;
+async function Price({ price }: { price: number }) {
+  const coupon = await getUserCoupon();
+  if (price === 0 || coupon == null) return formatPrice(price);
+  return (
+    <div className="flex gap-2 items-baseline">
+      <div className="line-through opacity-50">
+        {formatPrice(price)}
+      </div>
+      <div>{formatPrice(price * (1 - coupon.discountPercentage))}</div>
+    </div>
+  );
 }

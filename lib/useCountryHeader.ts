@@ -1,3 +1,4 @@
+import { pppCoupons } from "@/data/pppCoupons";
 import { headers } from "next/headers";
 
 const COUNTRY_HEADER_KEY = "x-user-country";
@@ -23,5 +24,12 @@ export async function getUserCoupon(){
    const country = await getUserCountry();
    if(country == null) return undefined;
 
-   const coupon = ppp
+   const coupon = pppCoupons.find(c => c.countryCodes.includes(country));
+
+    if(coupon == null) return undefined;
+
+    return  {
+        stripeCouponId: coupon.stripeCouponId,
+        discountPercentage: coupon.discountPercentage,
+    }
 }

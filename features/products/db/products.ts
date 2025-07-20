@@ -1,7 +1,34 @@
 import { db } from "@/drizzle/db";
-import { CourseProductTable, ProductTable } from "@/drizzle/schema";
-import { eq } from "drizzle-orm";
+import {
+  CourseProductTable,
+  ProductTable,
+  PurchasesTable,
+} from "@/drizzle/schema";
+import { and, eq, isNull } from "drizzle-orm";
 import { revalidateProductCache } from "./cache";
+import { getPurchaseGlobalTag } from "@/features/purchases/db/cache";
+import { cacheTag } from "next/dist/server/use-cache/cache-tag";
+
+export async function getUserOwnsProduct({
+  userId,
+  productId,
+}: {
+  userId: string;
+  productId: string;
+}) {
+  "use cache";
+  cacheTag(getPurchaseGlobalTag());
+
+  const existingPurchase = await db.query.CourseProductTable.findFirst({
+    where: and(
+      eq(PurchasesTable.productId, productId),
+      eq(PurchasesTable.userId, userId),
+      isNull(PurchasesTable.refundedAt)
+    ),
+  });
+
+  return existingPurchase != null;
+}
 
 export async function insertProduct(
   data: typeof ProductTable.$inferInsert & { courseIds: string[] }
@@ -47,7 +74,10 @@ export async function updateProduct(
     await trx
       .insert(CourseProductTable)
       .values(
-        data.courseIds.map((id) => ({ productId: updatedProduct.id, courseId: id }))
+        data.courseIds.map((id) => ({
+          productId: updatedProduct.id,
+          courseId: id,
+        }))
       );
     return updatedProduct;
   });
@@ -58,7 +88,10 @@ export async function updateProduct(
 }
 
 export async function deleteProduct(id: string) {
-  const [deletedProduct] = await db.delete(ProductTable).where(eq(ProductTable.id, id)).returning();
+  const [deletedProduct] = await db
+    .delete(ProductTable)
+    .where(eq(ProductTable.id, id))
+    .returning();
   if (deletedProduct == null) throw new Error("Failed to delete product");
   revalidateProductCache(deletedProduct.id);
 
