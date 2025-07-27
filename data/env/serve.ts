@@ -1,4 +1,5 @@
 import { createEnv } from "@t3-oss/env-nextjs";
+import { ST } from "next/dist/shared/lib/utils";
 import { z } from "zod";
 
 export const env = createEnv({
@@ -15,6 +16,7 @@ export const env = createEnv({
     STRIPE_PPP_40_COUPON_ID: z.string().min(1),
     STRIPE_PPP_30_COUPON_ID: z.string().min(1),
     STRIPE_PPP_20_COUPON_ID: z.string().min(1),
+    STRIPE_SECRET_KEY: z.string().min(1),
   },
   experimental__runtimeEnv: process.env,
 });

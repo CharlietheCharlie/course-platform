@@ -33,7 +33,6 @@ export async function POST(req: Request) {
       status: 400,
     });
   }
-
   switch (event.type) {
     case "user.created":
     case "user.updated": {

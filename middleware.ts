@@ -39,17 +39,17 @@ export default clerkMiddleware(async (auth, req) => {
     headers: req.headers,
   } : req);
 
-  if (decision.isDenied()) return forbidden();
+  // if (decision.isDenied()) return forbidden();
 
-  if (isAdminRoute(req)) {
-    const user = await auth.protect();
-    if (user.sessionClaims?.role !== "admin") {
-      return notFound();
-    }
-  }
-  if (isPublicRoute(req)) {
-    await auth.protect();
-  }
+  // if (isAdminRoute(req)) {
+  //   const user = await auth.protect();
+  //   if (user.sessionClaims?.role !== "admin") {
+  //     return notFound();
+  //   }
+  // }
+  // if (isPublicRoute(req)) {
+  //   await auth.protect();
+  // }
 
   if (!decision.ip.isVpn() && !decision.ip.isProxy()) {
     const headers = new Headers(req.headers);

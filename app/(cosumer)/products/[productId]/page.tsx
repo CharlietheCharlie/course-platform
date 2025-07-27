@@ -1,4 +1,18 @@
+import { SkeletonButton } from "@/components/SkeletonButton";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { db } from "@/drizzle/db";
 import {
   CourseSectionTable,
@@ -18,10 +32,14 @@ import { sumArray } from "@/lib/sumArray";
 import { getUserCoupon } from "@/lib/useCountryHeader";
 import { getCurrentUser } from "@/services/clerk";
 import { and, asc, eq } from "drizzle-orm";
+import { VideoIcon } from "lucide-react";
 import { cacheTag } from "next/dist/server/use-cache/cache-tag";
+import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { format } from "path";
 import { Suspense } from "react";
+import { set } from "zod";
 
 export default async function ProductPage({
   params,
@@ -68,10 +86,86 @@ export default async function ProductPage({
             </div>
           </div>
           <div className="text-xl">{product.description}</div>
-          <Suspense fallback={<SkeletonButton />}>
+          <Suspense fallback={<SkeletonButton className="h-12 w-36" />}>
             <PurchaseButton productId={product.id}></PurchaseButton>
           </Suspense>
         </div>
+        <div className="relative aspect-video max-w-lg flex-grow">
+          <Image
+            src={product.imageUrl}
+            alt={product.name}
+            fill
+            className="rounded-xl object-cover"
+          ></Image>
+        </div>
+      </div>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-8 items-start">
+        {product.courses.map((course) => (
+          <Card key={course.id}>
+            <CardHeader>
+              <CardTitle className="text-2xl font-semibold">
+                {course.name}
+              </CardTitle>
+              <CardDescription>
+                {formatPlural(course.courseSections.length, {
+                  singular: "section",
+                  plural: "sections",
+                })}{" "}
+                •{" "}
+                {formatPlural(
+                  sumArray(
+                    course.courseSections,
+                    (section) => section.lessons.length
+                  ),
+                  {
+                    singular: "lesson",
+                    plural: "lessons",
+                  }
+                )}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Accordion type="multiple">
+                {course.courseSections.map((section) => (
+                  <AccordionItem key={section.id} value={section.id}>
+                    <AccordionTrigger className="flex gap-2">
+                      <div className="flex flex-col flex-grow">
+                        <span className="text-lg">{section.name}</span>
+                        <span className="text-muted-foreground">
+                          {formatPlural(section.lessons.length, {
+                            singular: "lesson",
+                            plural: "lessons",
+                          })}
+                        </span>
+                      </div>
+                    </AccordionTrigger>
+                    <AccordionContent className="flex flex-col gap-2">
+                      {section.lessons.map((lesson) => (
+                        <div
+                          key={lesson.id}
+                          className="flex items-center gap-2 text-base"
+                        >
+                          <VideoIcon className="size-4" />
+                          {lesson.status === "preview" ? (
+                            <Link className="underline text-accent"
+                              href={`/courses/${course.id}/lessons/${lesson.id}`}
+                            >
+                              {lesson.name}
+                            </Link>
+                          ) : (
+                            <span>
+                              {lesson.name}
+                            </span>
+                          )}
+                        </div>
+                      ))}
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
+            </CardContent>
+          </Card>
+        ))}
       </div>
     </div>
   );
@@ -88,10 +182,12 @@ async function PurchaseButton({ productId }: { productId: string }) {
 
   if (alreadyOwnsProduct) {
     return <p>You already own this product</p>;
-  }else{
-    return <Button className="text-xl h-auto py-4 px-8 rounded-lg" asChild>
-      <Link href={`/products/${productId}/purchase`}>Get Now</Link>
-    </Button>
+  } else {
+    return (
+      <Button className="text-xl h-auto py-4 px-8 rounded-lg" asChild>
+        <Link href={`/products/${productId}/purchase`}>Get Now</Link>
+      </Button>
+    );
   }
 }
 

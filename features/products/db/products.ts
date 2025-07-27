@@ -19,7 +19,7 @@ export async function getUserOwnsProduct({
   "use cache";
   cacheTag(getPurchaseGlobalTag());
 
-  const existingPurchase = await db.query.CourseProductTable.findFirst({
+  const existingPurchase = await db.query.PurchasesTable.findFirst({
     where: and(
       eq(PurchasesTable.productId, productId),
       eq(PurchasesTable.userId, userId),

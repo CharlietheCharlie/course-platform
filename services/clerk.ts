@@ -9,6 +9,9 @@ const client = await clerkClient();
 
 export async function getCurrentUser({ allData = false } = {}) {
   const { userId, sessionClaims, redirectToSignIn } = await auth();
+  if (sessionClaims?.dbId) {
+    console.log(await getUser(sessionClaims?.dbId));
+  }
   return {
     clerkUserId: userId,
     userId: sessionClaims?.dbId,
