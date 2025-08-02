@@ -1,7 +1,8 @@
+"use server";
 import { getUserCoupon } from "@/lib/useCountryHeader";
 import { stripeServerClient } from "../stripeServer";
 import { env } from "@/data/env/client";
-import { URL } from "next/dist/compiled/@edge-runtime/primitives/url";
+import { URL } from "node:url";
 
 export async function getClientSessionSecret({
   product,
@@ -37,7 +38,7 @@ export async function getClientSessionSecret({
     }],
     ui_mode: "embedded",
     mode: "payment",
-    return_url: `${env.NEXT_PUBLIC_SERVER_URL}/api/webhooks/stripe?stripeSessionId={CHECKOUT_SESSION_ID}`,
+    return_url: `${env.NEXT_PUBLIC_SERVER_URL}/api/webhook/stripe?stripeSessionId={CHECKOUT_SESSION_ID}`,
     customer_email: user.email,
     payment_intent_data:{
         receipt_email: user.email,
