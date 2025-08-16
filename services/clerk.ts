@@ -4,14 +4,18 @@ import { getUserIdTag } from "@/features/users/db/cache";
 import { auth, clerkClient } from "@clerk/nextjs/server";
 import { eq } from "drizzle-orm";
 import { cacheTag } from "next/dist/server/use-cache/cache-tag";
+import { redirect } from "next/navigation";
 
 const client = await clerkClient();
 
 export async function getCurrentUser({ allData = false } = {}) {
   const { userId, sessionClaims, redirectToSignIn } = await auth();
-  if (sessionClaims?.dbId) {
-    console.log(await getUser(sessionClaims?.dbId));
+
+  if (userId && sessionClaims?.dbId == null) {
+    // 如果有 userId 但沒有 dbId，則需要同步 Clerk 的使用者資料到資料庫
+    redirect("/api/clerk/syncUsers");
   }
+
   return {
     clerkUserId: userId,
     userId: sessionClaims?.dbId,

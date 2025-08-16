@@ -2,7 +2,8 @@ import { env } from "@/data/env/serve";
 import { db } from "@/drizzle/db";
 import { ProductTable, UserTable } from "@/drizzle/schema";
 import { addUserCourseAccess } from "@/features/courses/db/userCourseAccess";
-import { insertPurchase } from "@/features/purchases/purchases";
+import { revalidatePurchaseCache } from "@/features/purchases/db/cache";
+import { insertPurchase } from "@/features/purchases/db/purchases";
 import { stripeServerClient } from "@/services/stripe/stripeServer";
 import { eq } from "drizzle-orm";
 import { redirect } from "next/navigation";
@@ -68,7 +69,7 @@ async function processStripeCheckout(checkoutSession: Stripe.Checkout.Session) {
   if (!user) throw new Error("User not found");
 
   const courseIds = product.courseProducts?.map((cp) => cp.courseId) || [];
-  db.transaction(async (trx) => {
+  const newPurchase = await db.transaction(async (trx) => {
     try {
       await addUserCourseAccess(
         {
@@ -77,7 +78,7 @@ async function processStripeCheckout(checkoutSession: Stripe.Checkout.Session) {
         },
         trx
       );
-      await insertPurchase(
+      return await insertPurchase(
         {
           stripeSessionId: checkoutSession.id,
           pricePaidInCents:
@@ -93,6 +94,9 @@ async function processStripeCheckout(checkoutSession: Stripe.Checkout.Session) {
       throw new Error("Transaction failed");
     }
   });
+  if(newPurchase) {
+    revalidatePurchaseCache(newPurchase.id, newPurchase.userId);
+   }
   return product.id;
 }
 

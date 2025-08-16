@@ -20,3 +20,12 @@ export function formatPrice(priceInDollars: number, {showZeroAsNumber = false}: 
    return formatter.format(priceInDollars);
  }
 } 
+
+const DATE_FORMATTER = new Intl.DateTimeFormat(undefined, {
+ dateStyle: 'medium',
+ timeStyle: 'short',
+});
+
+export function formatDate(date: Date) {
+  return DATE_FORMATTER.format(date);
+} 

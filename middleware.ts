@@ -33,23 +33,27 @@ const aj = arcjet({
 });
 
 export default clerkMiddleware(async (auth, req) => {
-  const decision = await aj.protect(env.TEST_IP_ADDRESS ? {
-    ...req,
-    ip: env.TEST_IP_ADDRESS,
-    headers: req.headers,
-  } : req);
+  const decision = await aj.protect(
+    env.TEST_IP_ADDRESS
+      ? {
+          ...req,
+          ip: env.TEST_IP_ADDRESS,
+          headers: req.headers,
+        }
+      : req
+  );
 
-  // if (decision.isDenied()) return forbidden();
+  if (decision.isDenied()) return new NextResponse(null, { status: 403 });
 
-  // if (isAdminRoute(req)) {
-  //   const user = await auth.protect();
-  //   if (user.sessionClaims?.role !== "admin") {
-  //     return notFound();
-  //   }
-  // }
-  // if (isPublicRoute(req)) {
-  //   await auth.protect();
-  // }
+  if (isAdminRoute(req)) {
+    const user = await auth.protect();
+    if (user.sessionClaims.role !== "admin") {
+      return new NextResponse(null, { status: 403 });
+    }
+  }
+  if (!isPublicRoute(req)) {
+    await auth.protect();
+  }
 
   if (!decision.ip.isVpn() && !decision.ip.isProxy()) {
     const headers = new Headers(req.headers);
