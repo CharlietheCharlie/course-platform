@@ -13,7 +13,7 @@ export function getPurchaseUserTag(userId: string) {
   return getIdTag("purchases", userId);
 }
 
-export function revalidatePurchaseCache(id: string, userId: string) {
+export function revalidatePurchaseCache({id, userId}:{id: string; userId: string}) {
   revalidateTag(getPurchaseGlobalTag());
   revalidateTag(getPurchaseIdTag(id));
   revalidateTag(getPurchaseUserTag(userId));

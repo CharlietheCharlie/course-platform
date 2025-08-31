@@ -95,7 +95,7 @@ async function processStripeCheckout(checkoutSession: Stripe.Checkout.Session) {
     }
   });
   if(newPurchase) {
-    revalidatePurchaseCache(newPurchase.id, newPurchase.userId);
+    revalidatePurchaseCache(newPurchase);
    }
   return product.id;
 }
